@@ -1,9 +1,7 @@
 import utils
 import warnings
-
 warnings.filterwarnings('ignore')
 from halo import Halo
-
 if __name__ == "__main__":
     urls = [{
         "beach":
@@ -51,7 +49,6 @@ if __name__ == "__main__":
         "beach": "San Juan",
         "url": "https://es.magicseaweed.com/San-Juan-Surf-Report/6853/"
     }]
-    
     
     spinner = Halo(text='Scrapping Surf Forecast Parameters from MagicSeaWeed ...', spinner='dots', color='magenta')
     spinner.start()
