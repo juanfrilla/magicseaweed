@@ -1,9 +1,6 @@
 import utils
-from msw_scraper import MSWScraper
 
 if __name__ == "__main__":
-    scraper = MSWScraper()
-
     urls = [{
         "beach":
         "Famara",
@@ -52,28 +49,7 @@ if __name__ == "__main__":
     }]
 
     df = utils.scrape_multiple_sites(urls)
-
-    df[['description', 'wind_state']] = df['wind_state'].str.split(',',
-                                                                   1,
-                                                                   expand=True)
-    df[['wind_state',
-        'wind_direction']] = df['wind_state'].str.split('shore',
-                                                        1,
-                                                        expand=True)
-    df['wind_state'] = df.wind_state.apply(lambda s: (s + 'shore').strip())
-
-    df = df.drop(df[(df["wind_state"] != "Offshore")
-                    & (df["wind_state"] != "Cross/Offshore")].index)
-
-    df = df.drop(df[(df["time"] == "9pm") | (df["time"] == "0am") |
-                    (df["time"] == "3am")].index)
-
-    df = df[[
-        "date", "time", "wind_direction", "wind_state", "description", "beach",
-        "tides"
-    ]]
     
-    df.sort_values(by=["date", "beach"], inplace=True, ascending=[True, True])
+    df= utils.format_dataframe(df)
 
     utils.df_to_csv("magicseaweed.csv", df)
-    scraper.driver.quit()
