@@ -1,12 +1,10 @@
-import os, pandas as pd, numpy as np
-from typing import Dict, List
+import os, pandas as pd
+from typing import Dict
 from datetime import datetime, timedelta
-
-from collections import defaultdict
 
 from threadingresult import ThreadWithReturnValue
 
-from datetime import time, datetime, timedelta
+from datetime import datetime, timedelta
 
 from msw_scraper import MSWScraper
 
@@ -74,7 +72,6 @@ def get_tide_info_list(tide_info):
     ]
 
     joined_list = tide_list + forecast_list
-
     joined_list.sort()
 
     if 'Bajando' in initial_status:
@@ -85,7 +82,7 @@ def get_tide_info_list(tide_info):
     for element in joined_list:
         if element in tide_info:
             status = not status
-
+            
         if element in tide_list:
             i += 1
         if i < len(tide_list):
