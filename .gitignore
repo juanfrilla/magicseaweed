@@ -1,0 +1,5 @@
+*.json
+venv/
+__pycache__/
+*.csv
+.~lock.magicseaweed.csv#
