@@ -1,15 +1,12 @@
-import os, pandas as pd, numpy as np
-from typing import Dict, List
+import os, pandas as pd
+from typing import Dict
 from datetime import datetime, timedelta
-
-from collections import defaultdict
 
 from threadingresult import ThreadWithReturnValue
 
-from datetime import time, datetime, timedelta
+from datetime import datetime, timedelta
 
 from msw_scraper import MSWScraper
-
 
 
 def df_to_csv(path, df: pd.DataFrame) -> None:
@@ -26,6 +23,7 @@ def forecast_to_df(dict: Dict) -> pd.DataFrame:
     df = pd.DataFrame(dict)
 
     return df
+
 
 def add_days_to_forecast(forecast):
     time_list = forecast['time']
@@ -55,65 +53,6 @@ def combine_df(df1, df2):
     return df
 
 
-def combine_df_tides(df, tides_data):
-    #tides_data = tides_data[:12]
-    tides_data = {k: tides_data[k] for k in list(tides_data)[:12]}
-
-    for (index, row) in df.iterrows():
-        if 'AM' in row['time'] and 'Subiendo' in tides_data[row['days']][0]:
-            value = tides_data[row['days']][0]
-
-        elif 'AM' in row['time'] and 'Bajando' in tides_data[row['days']][0]:
-            value = tides_data[row['days']][1]
-
-        # elif 'Bajando' in tides_data[row['days']][0] and 'Bajando' in tides_data[row['days']][1]: TODO corregir que está bajando en dos
-        #     value = tides_data[row['days']][1]
-        #     print("sssssir", tides_data[row['days']])
-
-        elif 'PM' in row['time'] and 'Subiendo' in tides_data[row['days']][1]:
-            value = tides_data[row['days']][1]
-        elif 'PM' in row['time'] and 'Bajando' in tides_data[
-                row['days']][1] and len(tides_data[row['days']]) > 2:
-            value = tides_data[row['days']][2]
-        # elif 'PM' in row['time'] and 'Bajando' in tides_data[row['days']][1] and len(tides_data[row['days']]) < 2:
-        #     value = tides_data[row['days']][1]
-        #     print("No lo usa")
-        elif 'Night' in row['time'] and len(tides_data[row['days']]) > 2:
-            value = tides_data[row['days']][2]
-        elif 'Night' in row['time'] and len(tides_data[row['days']]) < 2:
-            value = "-"
-        df.loc[index, "tides"] = value
-    return df
-
-
-def hour_AM_PM(hours_dict):
-    AM = [time(0, 0, 0), time(12, 0, 0)]
-    PM = [time(12, 0, 0), time(20, 0, 0)]
-    Night = [time(20, 0, 0), time(23, 59, 0)]
-
-    new_dict = {}
-
-    for key, value in hours_dict.items():
-        new_list = []
-        for element in value:
-            if element is not None:
-                h_m = element.split(" ")[1].replace("h", "")
-                time_to_check = datetime.strptime(f"{h_m}:00",
-                                                  "%H:%M:%S").time()
-
-                if time_to_check > AM[0] and time_to_check < AM[1]:
-                    text = check_ple_baj(f"{element} AM")
-                elif time_to_check > PM[0] and time_to_check < PM[1]:
-                    text = check_ple_baj(f"{element} PM")
-                elif time_to_check > Night[0] and time_to_check < Night[1]:
-                    text = check_ple_baj(f"{element} Night")
-                new_list.append(text)
-        new_dict[key] = new_list
-
-    return new_dict
-
-
-# Function to convert the date format
 def convert24(str1):
     if not 'AM' in str1 and not "12:" in str1:
         in_time = datetime.strptime(str1, "%I:%M %p")
@@ -126,14 +65,13 @@ def get_tide_info_list(tide_info):
     new_list = []
     initial_status = tide_info[0]
     i = 0
-    
+
     tide_list = list(filter(lambda element: ':' in element, tide_info))
     forecast_list = [
         "00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00"
     ]
 
     joined_list = tide_list + forecast_list
-
     joined_list.sort()
 
     if 'Bajando' in initial_status:
@@ -144,7 +82,7 @@ def get_tide_info_list(tide_info):
     for element in joined_list:
         if element in tide_info:
             status = not status
-
+            
         if element in tide_list:
             i += 1
         if i < len(tide_list):
@@ -188,71 +126,34 @@ def format_hour(tide_info, hour):
         return f"{hour.strip()} PM"
 
 
-# def format_hour(tide_info, hour):
-#     print("yeeeka", hour)
-#     print(tide_info)
-#     if len(hour.strip()) == 4:
-#         hour = "0" + hour.strip()
+def format_dataframe(df):
+    df[['description', 'wind_state']] = df['wind_state'].str.split(',',
+                                                                   1,
+                                                                   expand=True)
+    df[['wind_state',
+        'wind_direction']] = df['wind_state'].str.split('shore',
+                                                        1,
+                                                        expand=True)
+    df['wind_state'] = df.wind_state.apply(lambda s: (s + 'shore').strip())
 
-#     if len(tide_info) <= 2: #estaba <=
-#         hour = hour.replace("12:", "00:")
-#         hour = hour.replace("AM", " AM")
-#         print("!deeentroxxxxx", hour)
-#         return f"{hour.strip()}"
-#     else:
-#         hour = hour.replace("PM", " PM")
-#         print("!deeentrokkkk", hour)
-#         return f"{hour.strip()}"
+    df = df.drop(df[(df["wind_state"] != "Offshore")
+                    & (df["wind_state"] != "Cross/Offshore")].index)
 
+    df = df.drop(df[(df["time"] == "9pm") | (df["time"] == "0am") |
+                    (df["time"] == "3am")].index)
 
-def check_ple_baj(text):
-    if "ple" in text:
-        return text.replace("ple", "Subiendo hasta las")
-    elif "baj" in text:
-        return text.replace("baj", "Bajando hasta las")
+    df = df[[
+        "date", "time", "wind_direction", "wind_state", "description", "beach",
+        "tides"
+    ]]
+    df.sort_values(by=["date", "beach"], inplace=True, ascending=[True, True])
 
-
-#TODO Posiblemente ponerle desde las hasta las
-
-
-def get_greater_hour(my_dict):
-    new_dict = {}
-    for key, value in my_dict.items():
-        AM_list = []
-        PM_list = []
-        Night_list = []
-
-        for element in value:
-            if element is not None and "AM" in element:
-                AM_list.append(element)
-            elif element is not None and "PM" in element:
-                PM_list.append(element)
-            elif element is not None and "Night" in element:
-                Night_list.append(element)
-
-        #TODO quedarme de aqui la subida y no la bajada
-        if len(AM_list) > 1 and Night_list != []:
-            new_dict[key] = [AM_list[1], PM_list[0], Night_list[0]]
-        elif (len(AM_list) < 1 and Night_list != []) or (len(PM_list) < 1
-                                                         and Night_list != []):
-            new_dict[key] = [AM_list[0], PM_list[0], Night_list[0]]
-        elif len(AM_list) > 1 and Night_list == []:
-            new_dict[key] = [AM_list[1], PM_list[0]]
-        elif (len(AM_list) < 1 and Night_list == []) or (len(PM_list) < 1
-                                                         and Night_list == []):
-            new_dict[key] = [AM_list[0], PM_list[0]]
-
-        elif len(PM_list) > 1 and Night_list != []:
-            new_dict[key] = [AM_list[0], PM_list[1], Night_list[0]]
-        elif len(PM_list) > 1 and Night_list == []:
-            new_dict[key] = [AM_list[0], PM_list[1]]
-
-    return new_dict
+    return df
 
 
 def process_scrape_forecast(url, beach):
     msw_scraper = MSWScraper()
-    
+
     msw_scraper.driver.get(url)
 
     msw_scraper.prepare_site()
@@ -260,18 +161,13 @@ def process_scrape_forecast(url, beach):
 
     forecast = add_beach_to_forecast(forecast, beach)
     df = forecast_to_df(forecast)
-    
+
     msw_scraper.driver.quit()
     return df
-
-    #return df TODO devolver datframe aqui
-
-
 
 
 def scrape_multiple_sites(urls):
     threads = list()
-
 
     forecast = pd.DataFrame()
 
@@ -289,6 +185,3 @@ def scrape_multiple_sites(urls):
             forecast = combine_df(forecast, df)
 
     return forecast
-
-
-
