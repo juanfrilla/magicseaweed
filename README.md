@@ -16,6 +16,8 @@ Asure you have selenium and google chrome installed on your linux machine.
 
 At the end, it will generate a text file (magicseaweed.csv), where you can see all the conditions.
 
+![CSV result](static/result.png?raw=true "CSV result")
+
 This project is still under construction
 
 If you enjoyed this project, I will be so much pleased if you give me a star.
