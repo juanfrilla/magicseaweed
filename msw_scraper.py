@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 import utils
 
+
 class MSWScraper(object):
 
     def __init__(self):
@@ -23,7 +24,6 @@ class MSWScraper(object):
         return False
 
     def prepare_site(self):
-        #self.driver.get(url)
         all_iframes = self.driver.find_elements(By.TAG_NAME, "iframe")
         if len(all_iframes) > 0:
             self.driver.execute_script("""
@@ -35,7 +35,15 @@ class MSWScraper(object):
                                 """)
 
     def scrape(self):
-        forecast = {"date": [], "time": [], "wind_state": [], "tides": []}
+        forecast = {
+            "date": [],
+            "time": [],
+            "wind_state": [],
+            "tides": [],
+            "strength": [],
+            "period": [],
+            "swell_rate": []
+        }
         if self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
             table = s.find(
@@ -72,15 +80,39 @@ class MSWScraper(object):
                                 forecast["wind_state"].append(
                                     cell['data-original-title'])
 
+                            elif class_cell == "text-center background-gray-lighter":
+
+                                if "m" in cell.text:
+                                    forecast["strength"].append(cell.text)
+                                elif "s" in cell.text:
+                                    forecast["period"].append(cell.text)
+                            elif class_cell == "table-forecast-rating td-nowrap":
+                                ul = cell.find("ul")
+                                lis = ul.find_all("li")
+
+                                swell_rate_list = [
+                                    li['class'][0] for li in lis
+                                ]
+
+                                swell_rate = utils.count_swell_rate(
+                                    swell_rate_list)
+
+                                forecast['swell_rate'].append(swell_rate)
+
                         if 'class' in row.attrs:
                             class_row = " ".join(row['class']).strip()
                             if "background-clear msw-js-tide" in class_row and index != 0:
+                                table = row.find("tbody")
+                                trs = table.find_all("tr")
+                                row_length = len(trs)
+                                
+                                
                                 if "Marea" in cell.text and len(tide_info) < 8:
                                     tide = cell.text
                                     tide = utils.format_tide(tide)
                                 elif ":" in cell.text and len(tide_info) < 8:
                                     hour = utils.format_hour(
-                                        tide_info, cell.text)
+                                        tide_info, cell.text, row_length)
                                     hour = utils.convert24(hour)
 
                                     tide_info.append(tide)

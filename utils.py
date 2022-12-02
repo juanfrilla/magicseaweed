@@ -1,4 +1,4 @@
-import os, pandas as pd
+import os, pandas as pd, numpy as np
 from typing import Dict
 from datetime import datetime, timedelta
 
@@ -25,20 +25,6 @@ def forecast_to_df(dict: Dict) -> pd.DataFrame:
     return df
 
 
-def add_days_to_forecast(forecast):
-    time_list = forecast['time']
-    days_list = []
-    date = datetime.now()
-    for index, time in enumerate(time_list):
-        if time == "AM" and index != 0:
-            date += timedelta(days=1)
-            days_list.append(date.strftime("%d-%m, %A"))
-        else:
-            days_list.append(date.strftime("%d-%m, %A"))
-    forecast['days'] = days_list
-    return forecast
-
-
 def add_beach_to_forecast(forecast, beach):
     count_row = len(forecast['wind_state'])
     same_beach_list = [beach for i in range(0, count_row)]
@@ -54,11 +40,23 @@ def combine_df(df1, df2):
 
 
 def convert24(str1):
-    if not 'AM' in str1 and not "12:" in str1:
-        in_time = datetime.strptime(str1, "%I:%M %p")
-        out_time = datetime.strftime(in_time, "%H:%M")
-        return out_time
-    return str1.replace("AM", "").replace("PM", "").strip()
+    in_time = datetime.strptime(str1, "%I:%M %p")
+    out_time = datetime.strftime(in_time, "%H:%M")
+    return out_time
+
+
+def format_hour(tide_info, hour, row_length):
+    if len(hour.strip()) == 4:
+        hour = "0" + hour.strip()
+
+    if (len(tide_info) < 4
+            and row_length == 4) or (len(tide_info) < 4 and row_length == 3
+                                     and "12:" not in hour):
+        return f"{hour.strip()} AM"
+
+    elif (len(tide_info) < 4 and "12:" in hour
+          and row_length == 3) or (len(tide_info) >= 4):
+        return f"{hour.strip()} PM"
 
 
 def get_tide_info_list(tide_info):
@@ -82,7 +80,7 @@ def get_tide_info_list(tide_info):
     for element in joined_list:
         if element in tide_info:
             status = not status
-            
+
         if element in tide_list:
             i += 1
         if i < len(tide_list):
@@ -108,6 +106,30 @@ def get_tide_info_list(tide_info):
     return new_list
 
 
+def conditions(df: pd.DataFrame) -> pd.DataFrame:
+    strength = df["strength"].str.replace('m', '').astype(float)
+    period = df["period"].str.replace('s', '').astype(float)
+
+    #STRENGTH
+    STRENGTH = ((strength >= 1) & (strength <= 2.5))
+
+    #PERIOD
+    PERIOD = (period > 7)
+
+    favorable = (STRENGTH & PERIOD)
+
+    default = "No Favorable"
+
+    str_list = ["Favorable"]
+
+    df["approval"] = np.select(
+        [favorable],
+        str_list,
+        default=default,
+    )
+    return df
+
+
 def format_tide(tide):
     if tide.strip() == "Marea Alta":
         return "Subiendo hasta las"
@@ -115,15 +137,11 @@ def format_tide(tide):
         return "Bajando hasta las"
 
 
-def format_hour(tide_info, hour):
-    if len(hour.strip()) == 4:
-        hour = "0" + hour.strip()
+def count_swell_rate(swell_rate_list):
+    active = swell_rate_list.count("active")
+    inactive = swell_rate_list.count("inactive")
 
-    if len(tide_info) <= 2:
-        hour = hour.replace("12:", "00:")
-        return f"{hour.strip()} AM"
-    else:
-        return f"{hour.strip()} PM"
+    return f"{active}/{inactive}"
 
 
 def format_dataframe(df):
@@ -136,6 +154,8 @@ def format_dataframe(df):
                                                         expand=True)
     df['wind_state'] = df.wind_state.apply(lambda s: (s + 'shore').strip())
 
+    df = conditions(df)
+
     df = df.drop(df[(df["wind_state"] != "Offshore")
                     & (df["wind_state"] != "Cross/Offshore")].index)
 
@@ -143,8 +163,8 @@ def format_dataframe(df):
                     (df["time"] == "3am")].index)
 
     df = df[[
-        "date", "time", "wind_direction", "wind_state", "description", "beach",
-        "tides"
+        "date", "time", "strength", "period", "swell_rate", "wind_direction",
+        "wind_state", "description", "beach", "tides", "approval"
     ]]
     df.sort_values(by=["date", "beach"], inplace=True, ascending=[True, True])
 
