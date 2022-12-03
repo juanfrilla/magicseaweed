@@ -1,4 +1,4 @@
-import os, pandas as pd
+import os, pandas as pd, numpy as np
 from typing import Dict
 from datetime import datetime, timedelta
 
@@ -23,20 +23,6 @@ def forecast_to_df(dict: Dict) -> pd.DataFrame:
     df = pd.DataFrame(dict)
 
     return df
-
-
-def add_days_to_forecast(forecast):
-    time_list = forecast['time']
-    days_list = []
-    date = datetime.now()
-    for index, time in enumerate(time_list):
-        if time == "AM" and index != 0:
-            date += timedelta(days=1)
-            days_list.append(date.strftime("%d-%m, %A"))
-        else:
-            days_list.append(date.strftime("%d-%m, %A"))
-    forecast['days'] = days_list
-    return forecast
 
 
 def add_beach_to_forecast(forecast, beach):
@@ -82,7 +68,7 @@ def get_tide_info_list(tide_info):
     for element in joined_list:
         if element in tide_info:
             status = not status
-            
+
         if element in tide_list:
             i += 1
         if i < len(tide_list):
@@ -106,6 +92,30 @@ def get_tide_info_list(tide_info):
     new_list = [element.split("-")[1] for element in new_list]
 
     return new_list
+
+
+def conditions(df: pd.DataFrame) -> pd.DataFrame:
+    strength = df["strength"].str.replace('m', '').astype(float)
+    period = df["period"].str.replace('s', '').astype(float)
+
+    #STRENGTH
+    STRENGTH = ((strength > 1) & (strength < 3.5)) #2.5
+
+    #PERIOD
+    PERIOD = (period > 7)
+
+    favorable = (STRENGTH & PERIOD)
+
+    default = "No Favorable"
+
+    str_list = ["Favorable"]
+
+    df["approval"] = np.select(
+        [favorable],
+        str_list,
+        default=default,
+    )
+    return df
 
 
 def format_tide(tide):
@@ -136,6 +146,8 @@ def format_dataframe(df):
                                                         expand=True)
     df['wind_state'] = df.wind_state.apply(lambda s: (s + 'shore').strip())
 
+    df = conditions(df)
+
     df = df.drop(df[(df["wind_state"] != "Offshore")
                     & (df["wind_state"] != "Cross/Offshore")].index)
 
@@ -143,8 +155,8 @@ def format_dataframe(df):
                     (df["time"] == "3am")].index)
 
     df = df[[
-        "date", "time", "wind_direction", "wind_state", "description", "beach",
-        "tides"
+        "date", "time", "strength", "period", "wind_direction", "wind_state",
+        "description", "beach", "tides", "approval"
     ]]
     df.sort_values(by=["date", "beach"], inplace=True, ascending=[True, True])
 
