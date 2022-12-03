@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 import utils
 
+
 class MSWScraper(object):
 
     def __init__(self):
@@ -23,7 +24,6 @@ class MSWScraper(object):
         return False
 
     def prepare_site(self):
-        #self.driver.get(url)
         all_iframes = self.driver.find_elements(By.TAG_NAME, "iframe")
         if len(all_iframes) > 0:
             self.driver.execute_script("""
@@ -35,7 +35,14 @@ class MSWScraper(object):
                                 """)
 
     def scrape(self):
-        forecast = {"date": [], "time": [], "wind_state": [], "tides": []}
+        forecast = {
+            "date": [],
+            "time": [],
+            "wind_state": [],
+            "tides": [],
+            "strength": [],
+            "period": []
+        }
         if self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
             table = s.find(
@@ -71,6 +78,13 @@ class MSWScraper(object):
                             ]:
                                 forecast["wind_state"].append(
                                     cell['data-original-title'])
+
+                            elif class_cell == "text-center background-gray-lighter":
+
+                                if "m" in cell.text:
+                                    forecast["strength"].append(cell.text)
+                                elif "s" in cell.text:
+                                    forecast["period"].append(cell.text)
 
                         if 'class' in row.attrs:
                             class_row = " ".join(row['class']).strip()

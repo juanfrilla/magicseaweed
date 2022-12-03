@@ -2,6 +2,7 @@ import utils
 import warnings
 warnings.filterwarnings('ignore')
 from halo import Halo
+
 if __name__ == "__main__":
     urls = [{
         "beach":
@@ -55,4 +56,4 @@ if __name__ == "__main__":
     df = utils.scrape_multiple_sites(urls)
     df= utils.format_dataframe(df)
     utils.df_to_csv("magicseaweed.csv", df)
-    spinner.stop_and_persist(text=('Check the CSV file (👀📝) and have a good surfing 🏄‍!').encode('utf-8'))
+    spinner.stop_and_persist(text=('Check the CSV file (👀📝), have a good surfing 🏄‍ and respect the sea 🌊!').encode('utf-8'))
