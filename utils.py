@@ -40,11 +40,23 @@ def combine_df(df1, df2):
 
 
 def convert24(str1):
-    if not 'AM' in str1 and not "12:" in str1:
-        in_time = datetime.strptime(str1, "%I:%M %p")
-        out_time = datetime.strftime(in_time, "%H:%M")
-        return out_time
-    return str1.replace("AM", "").replace("PM", "").strip()
+    in_time = datetime.strptime(str1, "%I:%M %p")
+    out_time = datetime.strftime(in_time, "%H:%M")
+    return out_time
+
+
+def format_hour(tide_info, hour, row_length):
+    if len(hour.strip()) == 4:
+        hour = "0" + hour.strip()
+
+    if (len(tide_info) < 4
+            and row_length == 4) or (len(tide_info) < 4 and row_length == 3
+                                     and "12:" not in hour):
+        return f"{hour.strip()} AM"
+
+    elif (len(tide_info) < 4 and "12:" in hour
+          and row_length == 3) or (len(tide_info) >= 4):
+        return f"{hour.strip()} PM"
 
 
 def get_tide_info_list(tide_info):
@@ -99,7 +111,7 @@ def conditions(df: pd.DataFrame) -> pd.DataFrame:
     period = df["period"].str.replace('s', '').astype(float)
 
     #STRENGTH
-    STRENGTH = ((strength > 1) & (strength < 3.5)) #2.5
+    STRENGTH = ((strength >= 1) & (strength <= 2.5))
 
     #PERIOD
     PERIOD = (period > 7)
@@ -125,15 +137,11 @@ def format_tide(tide):
         return "Bajando hasta las"
 
 
-def format_hour(tide_info, hour):
-    if len(hour.strip()) == 4:
-        hour = "0" + hour.strip()
+def count_swell_rate(swell_rate_list):
+    active = swell_rate_list.count("active")
+    inactive = swell_rate_list.count("inactive")
 
-    if len(tide_info) <= 2:
-        hour = hour.replace("12:", "00:")
-        return f"{hour.strip()} AM"
-    else:
-        return f"{hour.strip()} PM"
+    return f"{active}/{inactive}"
 
 
 def format_dataframe(df):
@@ -155,8 +163,8 @@ def format_dataframe(df):
                     (df["time"] == "3am")].index)
 
     df = df[[
-        "date", "time", "strength", "period", "wind_direction", "wind_state",
-        "description", "beach", "tides", "approval"
+        "date", "time", "strength", "period", "swell_rate", "wind_direction",
+        "wind_state", "description", "beach", "tides", "approval"
     ]]
     df.sort_values(by=["date", "beach"], inplace=True, ascending=[True, True])
 
