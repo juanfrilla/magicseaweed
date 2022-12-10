@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 
 import utils
 
-
 class MSWScraper(object):
 
     def __init__(self):
@@ -38,12 +37,20 @@ class MSWScraper(object):
         forecast = {
             "date": [],
             "time": [],
+            "flatness": [],
             "wind_state": [],
             "tides": [],
-            "strength": [],
+            "primary_wave": [],
             "period": [],
             "swell_rate": []
         }
+        
+        days ={
+            0: "Today",
+            1: "Tomorrow",
+            2: "Day After Tomorrow"
+        }
+        
         if self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
             table = s.find(
@@ -54,24 +61,27 @@ class MSWScraper(object):
 
             tablebodies = table.find_all(name="tbody", recursive=False)
 
-            for tablebody in tablebodies:
+            for index_tb, tablebody in enumerate(tablebodies[0:3]):
                 rows = tablebody.find_all("tr")
+                
                 for row in rows:
+                    #DATE
                     if 'data-date-anchor' in row.attrs:
-                        r_date = ''.join(
-                            filter(str.isdigit,
-                                   row['data-date-anchor'].strip()))
-
+                        r_date = ''.join(filter(str.isdigit,row['data-date-anchor'].strip()))
                     cells = row.find_all("td")
                     tide_info = []
                     for index, cell in enumerate(cells):
                         if 'class' in cell.attrs:
                             class_cell = " ".join(cell['class']).strip()
+                            
+                            #TIME
                             if class_cell == "nopadding-left row-title background-clear msw-js-tooltip":
                                 c_time = (cell.text.strip()).replace(
                                     "12am", "0am")
-                                forecast["date"].append(r_date)
+                                forecast["date"].append(f"{r_date} {days[index_tb]}")
                                 forecast["time"].append(c_time)
+                            
+                            #WIND STATE
                             elif class_cell in [
                                     "text-center last msw-js-tooltip td-square background-warning",
                                     "text-center last msw-js-tooltip td-square background-success",
@@ -79,13 +89,16 @@ class MSWScraper(object):
                             ]:
                                 forecast["wind_state"].append(
                                     cell['data-original-title'])
-
+                            
+                            #STRENGTH AND PERIOD
                             elif class_cell == "text-center background-gray-lighter":
 
                                 if "m" in cell.text:
-                                    forecast["strength"].append(cell.text)
+                                    forecast["primary_wave"].append(cell.text)
                                 elif "s" in cell.text:
                                     forecast["period"].append(cell.text)
+                                    
+                            #SWELL RATE
                             elif class_cell == "table-forecast-rating td-nowrap":
                                 ul = cell.find("ul")
                                 lis = ul.find_all("li")
@@ -98,9 +111,15 @@ class MSWScraper(object):
                                     swell_rate_list)
 
                                 forecast['swell_rate'].append(swell_rate)
-
+                            
+                            elif class_cell == "text-center background-info table-forecast-breaking-wave":
+                                forecast['flatness'] = cell.text
+                                #print(cell.text)
+                        
                         if 'class' in row.attrs:
                             class_row = " ".join(row['class']).strip()
+                            
+                            #TIDES
                             if "background-clear msw-js-tide" in class_row and index != 0:
                                 table = row.find("tbody")
                                 trs = table.find_all("tr")
