@@ -182,9 +182,9 @@ def format_dataframe(df):
                     (df["time"] == "3am")].index)
 
     df = df[[
-        "date_name", "date", "time", "flatness", "primary_wave", "period", "swell_rate",
-        "wind_direction", "wind_state", "description", "beach", "tides_state",
-        "tides_hour", "approval"
+        "date_name", "date", "time", "beach", "tides_state",
+        "tides_hour", "flatness", "primary_wave", "period", "swell_rate",
+        "wind_direction", "wind_state", "description", "approval"
     ]]
     df.sort_values(by=["date", "beach"], inplace=True, ascending=[True, True])
 
