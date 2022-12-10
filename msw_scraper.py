@@ -13,16 +13,18 @@ class MSWScraper(object):
     
     def __init__(self):
         self.driver= self.get_driver()
+    def __del__(self):
+        self.driver.quit()
     
     def get_driver(self):
-        service = Service(ChromeDriverManager().install())
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.add_argument('--disable-gpu')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
-        return webdriver.Chrome(service= service, options=options)
-    
+
+        return webdriver.Chrome(
+            executable_path=r"/usr/bin/chromedriver", chrome_options=options)
     
     
     def page_is_loaded(self):
