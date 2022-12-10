@@ -200,8 +200,7 @@ def process_scrape_forecast(url, beach):
 
     forecast = add_beach_to_forecast(forecast, beach)
     df = forecast_to_df(forecast)
-
-    msw_scraper.driver.quit()
+    
     return df
 
 
@@ -216,9 +215,8 @@ def scrape_multiple_sites(urls):
         x = ThreadWithReturnValue(target=process_scrape_forecast,
                                   args=(url, beach))
         
-        
-        threads.append(x)
         add_script_run_ctx(x)
+        threads.append(x)
         x.start()
 
     for thread in threads:
