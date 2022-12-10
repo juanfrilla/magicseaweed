@@ -9,21 +9,9 @@ import utils
 # Cache the dataframe so it's only loaded once
 @st.experimental_memo
 def load_data(urls):
-    start_time = time.time()
-    #spinner = Halo(
-        # text='Scrapping Surf Forecast Parameters from MagicSeaWeed ...',
-        # spinner='dots',
-        # color='magenta')
-    #spinner.start()
-
     df = utils.scrape_multiple_sites(urls)
     df = utils.format_dataframe(df)
     utils.df_to_csv("magicseaweed.csv", df)
-
-    # spinner.stop_and_persist(text=(
-    #     'Check the CSV file (👀📝), have a good surfing 🏄‍ and respect the sea 🌊!'
-    # ).encode('utf-8'))
-    # print("--- %s seconds ---" % (time.time() - start_time))
     return df
 
 
