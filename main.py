@@ -1,12 +1,13 @@
 import utils
 import warnings
 warnings.filterwarnings('ignore')
+import front
+
+import time 
 from halo import Halo
 
-import time
-
 if __name__ == "__main__":
-    start_time = time.time()
+    
 
     urls = [{
         "beach":
@@ -55,10 +56,16 @@ if __name__ == "__main__":
         "url": "https://es.magicseaweed.com/San-Juan-Surf-Report/6853/"
     }]
     
-    spinner = Halo(text='Scrapping Surf Forecast Parameters from MagicSeaWeed ...', spinner='dots', color='magenta')
-    spinner.start()
-    df = utils.scrape_multiple_sites(urls)
-    df= utils.format_dataframe(df)
-    utils.df_to_csv("magicseaweed.csv", df)
-    spinner.stop_and_persist(text=('Check the CSV file (👀📝), have a good surfing 🏄‍ and respect the sea 🌊!').encode('utf-8'))
-    print("--- %s seconds ---" % (time.time() - start_time))
+
+    
+    front.plot_data(urls)
+    # start_time = time.time()
+    
+    # spinner = Halo(text='Scrapping Surf Forecast Parameters from MagicSeaWeed ...', spinner='dots', color='magenta')
+    # spinner.start()
+    # df = utils.scrape_multiple_sites(urls)
+    # df= utils.format_dataframe(df)
+    # utils.df_to_csv("magicseaweed.csv", df)
+    # spinner.stop_and_persist(text=('Check the CSV file (👀📝), have a good surfing 🏄‍ and respect the sea 🌊!').encode('utf-8'))
+    # print("--- %s seconds ---" % (time.time() - start_time))
+

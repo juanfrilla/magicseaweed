@@ -19,6 +19,11 @@ def df_to_csv(path, df: pd.DataFrame) -> None:
         os.system(f"explorer.exe {path}")
 
 
+def df_to_html(df: pd.DataFrame) -> None:
+    df_html = df.to_html()
+    return df_html
+
+
 def forecast_to_df(dict: Dict) -> pd.DataFrame:
     df = pd.DataFrame(dict)
 
@@ -97,9 +102,9 @@ def get_tide_info_list(tide_info):
 
     for index, element in enumerate(new_list):
         if 'False' in element:
-            new_list[index] = element.replace("False", "Bajando")
+            new_list[index] = element.replace("False", "Bajando,")
         elif 'True' in element:
-            new_list[index] = element.replace("True", "Subiendo")
+            new_list[index] = element.replace("True", "Subiendo,")
 
     new_list = [element.split("-")[1] for element in new_list]
 
@@ -107,16 +112,23 @@ def get_tide_info_list(tide_info):
 
 
 def conditions(df: pd.DataFrame) -> pd.DataFrame:
-    strength = df["strength"].str.replace('m', '').astype(float)
+    primary_wave = df["primary_wave"].str.replace('m', '').astype(float)
     period = df["period"].str.replace('s', '').astype(float)
+    flatness_str = df['flatness'].str.strip()
+    wave_heigh = df['flatness'].str.split("-").str[1].str.replace(
+        'm', '').str.strip().astype(float)
 
     #STRENGTH
-    STRENGTH = ((strength >= 1) & (strength <= 2.5))
+    STRENGTH = ((primary_wave >= 1) & (primary_wave <= 2.5))
 
     #PERIOD
     PERIOD = (period > 7)
 
-    favorable = (STRENGTH & PERIOD)
+    FLATNESS_STR = (flatness_str != 'Plano')
+
+    FLATNESS_NUM = wave_heigh >= primary_wave
+
+    favorable = (STRENGTH & PERIOD & FLATNESS_STR & FLATNESS_NUM)
 
     default = "No Favorable"
 
@@ -145,6 +157,8 @@ def count_swell_rate(swell_rate_list):
 
 
 def format_dataframe(df):
+    df[['date', 'date_name']] = df['date'].str.split(' ', 1, expand=True)
+
     df[['description', 'wind_state']] = df['wind_state'].str.split(',',
                                                                    1,
                                                                    expand=True)
@@ -153,6 +167,10 @@ def format_dataframe(df):
                                                         1,
                                                         expand=True)
     df['wind_state'] = df.wind_state.apply(lambda s: (s + 'shore').strip())
+
+    df[['tides_state', 'tides_hour']] = df['tides'].str.split(',',
+                                                              1,
+                                                              expand=True)
 
     df = conditions(df)
 
@@ -163,8 +181,9 @@ def format_dataframe(df):
                     (df["time"] == "3am")].index)
 
     df = df[[
-        "date", "time", "strength", "period", "swell_rate", "wind_direction",
-        "wind_state", "description", "beach", "tides", "approval"
+        "date_name", "date", "time", "flatness", "primary_wave", "period", "swell_rate",
+        "wind_direction", "wind_state", "description", "beach", "tides_state",
+        "tides_hour", "approval"
     ]]
     df.sort_values(by=["date", "beach"], inplace=True, ascending=[True, True])
 
