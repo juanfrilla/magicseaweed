@@ -13,8 +13,7 @@ class MSWScraper(object):
         options.add_argument("--start-maximized")
         options.add_argument("--disable-infobars")
         options.add_argument("--disable-extensions")
-        self.driver = webdriver.Chrome(
-            executable_path=r"/usr/bin/chromedriver", chrome_options=options)
+        self.driver = webdriver.Chrome(chrome_options=options)
 
     def page_is_loaded(self):
         x = self.driver.execute_script("return document.readyState")

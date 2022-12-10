@@ -4,11 +4,12 @@ from halo import Halo
 
 import time
 import utils
-
+import chromedriver_autoinstaller
 
 # Cache the dataframe so it's only loaded once
 @st.experimental_memo
 def load_data(urls):
+    chromedriver_autoinstaller.install()
     df = utils.scrape_multiple_sites(urls)
     df = utils.format_dataframe(df)
     utils.df_to_csv("magicseaweed.csv", df)
