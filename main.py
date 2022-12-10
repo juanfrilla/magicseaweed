@@ -1,7 +1,6 @@
 import utils
 import warnings
 warnings.filterwarnings('ignore')
-<<<<<<< HEAD
 import front
 
 import time 
@@ -9,14 +8,6 @@ from halo import Halo
 
 if __name__ == "__main__":
     
-=======
-from halo import Halo
-
-import time
-
-if __name__ == "__main__":
-    start_time = time.time()
->>>>>>> main
 
     urls = [{
         "beach":
