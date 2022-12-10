@@ -4,27 +4,32 @@ from halo import Halo
 
 import time
 import utils
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromiumService
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.core.utils import ChromeType
-from selenium.webdriver.chrome.service import Service
+
 # Cache the dataframe so it's only loaded once
 @st.experimental_memo
 def load_data(urls):
     
+    start_time = time.time()
+    spinner = Halo(text='Scrapping data from MagicSeaWeed\n',text_color='blue', color= 'magenta', spinner='dots')
+    spinner.start()
+
     df = utils.scrape_multiple_sites(urls)
     df = utils.format_dataframe(df)
     utils.df_to_csv("magicseaweed.csv", df)
+    
+    spinner.stop_and_persist(text='You can check the url (👨‍💻) or if you prefer, the csv file (👀📈), happy surfing (🏄) and respect the sea(🌊)')
+    print("--- %s seconds ---" % (time.time() - start_time))
+    
+    
     return df
 
 
 
 def plot_data(urls):
+
+    
     # Boolean to resize the dataframe, stored as a session state variable
     st.checkbox("Use container width", value=False, key="use_container_width")
-    
-
     df = load_data(urls)
 
     # Display the dataframe and allow the user to stretch the dataframe
@@ -62,3 +67,4 @@ def plot_data(urls):
     df = df[mask]
 
     st.dataframe(df, use_container_width=st.session_state.use_container_width)
+    

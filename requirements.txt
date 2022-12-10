@@ -65,4 +65,5 @@ validators==0.20.0
 watchdog==2.2.0
 webdriver-manager==3.8.5
 wsproto==1.2.0
+yapf==0.32.0
 zipp==3.11.0

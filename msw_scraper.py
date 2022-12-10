@@ -12,20 +12,12 @@ import utils
 class MSWScraper(object):
     
     def __init__(self):
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--no-sandbox')
         self.driver= self.get_driver()
     
     def get_driver(self):
-        #service = ChromiumService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
         service = Service(ChromeDriverManager().install())
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
-        
         options.add_argument('--disable-gpu')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
