@@ -3,11 +3,12 @@ from typing import Dict
 from datetime import datetime, timedelta
 
 from threadingresult import ThreadWithReturnValue
+from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 from datetime import datetime, timedelta
 
 from msw_scraper import MSWScraper
-
+import streamlit as st
 
 def df_to_csv(path, df: pd.DataFrame) -> None:
     if os.path.exists(path):
@@ -189,7 +190,6 @@ def format_dataframe(df):
 
     return df
 
-
 def process_scrape_forecast(url, beach):
     msw_scraper = MSWScraper()
 
@@ -215,7 +215,10 @@ def scrape_multiple_sites(urls):
         beach = element['beach']
         x = ThreadWithReturnValue(target=process_scrape_forecast,
                                   args=(url, beach))
+        
+        
         threads.append(x)
+        add_script_run_ctx(x)
         x.start()
 
     for thread in threads:

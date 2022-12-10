@@ -4,21 +4,26 @@ from halo import Halo
 
 import time
 import utils
-import chromedriver_autoinstaller
-
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromiumService
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.utils import ChromeType
+from selenium.webdriver.chrome.service import Service
 # Cache the dataframe so it's only loaded once
 @st.experimental_memo
 def load_data(urls):
-    chromedriver_autoinstaller.install()
+    
     df = utils.scrape_multiple_sites(urls)
     df = utils.format_dataframe(df)
     utils.df_to_csv("magicseaweed.csv", df)
     return df
 
 
+
 def plot_data(urls):
     # Boolean to resize the dataframe, stored as a session state variable
     st.checkbox("Use container width", value=False, key="use_container_width")
+    
 
     df = load_data(urls)
 

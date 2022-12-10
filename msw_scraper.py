@@ -1,20 +1,38 @@
-from selenium import webdriver
+
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
-
+import streamlit as st
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromiumService
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.utils import ChromeType
+from selenium.webdriver.chrome.service import Service
 import utils
 
 class MSWScraper(object):
-
+    
     def __init__(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
-
-        options.add_argument("--start-maximized")
-        options.add_argument("--disable-infobars")
-        options.add_argument("--disable-extensions")
-        self.driver = webdriver.Chrome(chrome_options=options)
-
+        
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--no-sandbox')
+        self.driver= self.get_driver()
+    
+    def get_driver(self):
+        #service = ChromiumService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+        service = Service(ChromeDriverManager().install())
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--no-sandbox')
+        return webdriver.Chrome(service= service, options=options)
+    
+    
+    
     def page_is_loaded(self):
         x = self.driver.execute_script("return document.readyState")
         if x == "complete":
@@ -31,7 +49,7 @@ class MSWScraper(object):
                         elems[i].hidden=true;
                     }
                                 """)
-
+            
     def scrape(self):
         forecast = {
             "date": [],

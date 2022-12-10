@@ -1,5 +1,8 @@
 import threading
 
+from streamlit.runtime.scriptrunner import add_script_run_ctx
+
+
 class ThreadWithReturnValue(threading.Thread):
     
     def __init__(self, group=None, target=None, name=None,
