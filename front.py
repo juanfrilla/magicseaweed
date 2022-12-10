@@ -51,13 +51,6 @@ def plot_data(urls):
                                            tides_state,
                                            default=tides_state)
 
-    # option = st.selectbox(
-    #     "How would you like to be contacted?",
-    #     ("Email", "Home phone", "Mobile phone"),
-    #     label_visibility=st.session_state.visibility,
-    #     disabled=st.session_state.disabled,
-    # )
-
     # --- FILTER DATAFRAME BASED ON SELECTION
     mask = (df['date_name'].isin(date_name_selection)) & (df['wind_state'].isin(
         wind_state_selection)) & (df['beach'].isin(beach_selection)) & (
@@ -69,18 +62,3 @@ def plot_data(urls):
     df = df[mask]
 
     st.dataframe(df, use_container_width=st.session_state.use_container_width)
-
-    # options = st.multiselect(
-    # 'What are your favorite colors',
-    # ['Green', 'Yellow', 'Red', 'Blue'],
-    # ['Yellow', 'Red'])
-
-    # st.write('You selected:', options)
-
-    # date_selection = st.selectbox('Select Date:',date)
-    # print("tttttiiiipe", type(date_selection), date_selection)
-    # wind_state_selection = st.selectbox('Select Wind State:',wind_state)
-    # beach_selection = st.selectbox('Select Beach:',beach)
-    # approval_selection = st.selectbox('Select Approval:', approval)
-
-    #https://blog.devgenius.io/streamlit-python-tips-how-to-avoid-your-app-from-rerunning-on-every-widget-click-cae99c5189eb

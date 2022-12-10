@@ -1,12 +1,7 @@
-import utils
 import warnings
 warnings.filterwarnings('ignore')
 
 import front
-
-
-import time 
-from halo import Halo
 
 if __name__ == "__main__":
     
