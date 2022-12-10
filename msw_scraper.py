@@ -3,29 +3,24 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import streamlit as st
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromiumService
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.core.utils import ChromeType
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.service import Service as ChromeService
+
+
 import utils
 
 class MSWScraper(object):
     
-    def __init__(self):
-        self.driver= self.get_driver()
-    def __del__(self):
-        self.driver.quit()
-    
-    def get_driver(self):
+    def __init__(self, chd_path):
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.add_argument('--disable-gpu')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--no-sandbox')
-
-        return webdriver.Chrome(
-            executable_path=r"/usr/bin/chromedriver", chrome_options=options)
-    
+        
+        self.driver =  webdriver.Chrome(service=ChromeService(chd_path), options = options)
+        
+    def __del__(self):
+        self.driver.quit()
     
     def page_is_loaded(self):
         x = self.driver.execute_script("return document.readyState")

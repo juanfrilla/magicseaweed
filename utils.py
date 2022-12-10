@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 from threadingresult import ThreadWithReturnValue
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
+from webdriver_manager.chrome import ChromeDriverManager
+
 from datetime import datetime, timedelta
 
 from msw_scraper import MSWScraper
@@ -190,8 +192,8 @@ def format_dataframe(df):
 
     return df
 
-def process_scrape_forecast(url, beach):
-    msw_scraper = MSWScraper()
+def process_scrape_forecast(url, beach, chd_path):
+    msw_scraper = MSWScraper(chd_path)
 
     msw_scraper.driver.get(url)
 
@@ -208,12 +210,14 @@ def scrape_multiple_sites(urls):
     threads = list()
 
     forecast = pd.DataFrame()
+    
+    chd_path = ChromeDriverManager().install()
 
     for element in urls:
         url = element['url']
         beach = element['beach']
         x = ThreadWithReturnValue(target=process_scrape_forecast,
-                                  args=(url, beach))
+                                  args=(url, beach, chd_path))
         
         add_script_run_ctx(x)
         threads.append(x)
