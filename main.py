@@ -1,7 +1,6 @@
 import utils
 import warnings
 warnings.filterwarnings('ignore')
-import front
 
 import time 
 from halo import Halo
