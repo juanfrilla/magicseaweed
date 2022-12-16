@@ -115,21 +115,21 @@ def get_tide_info_list(tide_info):
 
 
 def conditions(df: pd.DataFrame) -> pd.DataFrame:
-    primary_wave = df["primary_wave"].str.replace('m', '').astype(float)
+    primary_wave_heigh = df["primary_wave"].str.replace('m', '').astype(float)
     period = df["period"].str.replace('s', '').astype(float)
     flatness_str = df['flatness'].str.strip()
-    wave_heigh = df['flatness'].str.split("-").str[1].str.replace(
+    flatness_heigh = df['flatness'].str.split("-").str[1].str.replace(
         'm', '').str.strip().astype(float)
 
     #STRENGTH
-    STRENGTH = ((primary_wave >= 1) & (primary_wave <= 2.5))
+    STRENGTH = ((primary_wave_heigh >= 1) & (primary_wave_heigh <= 2.5))
 
     #PERIOD
     PERIOD = (period > 7)
 
     FLATNESS_STR = (flatness_str != 'Plano')
 
-    FLATNESS_NUM = wave_heigh >= primary_wave
+    FLATNESS_NUM = flatness_heigh >= 1 & (flatness_heigh <= 2.5) #flatness_heigh>primary_wave_heigh
 
     favorable = (STRENGTH & PERIOD & FLATNESS_STR & FLATNESS_NUM)
 
