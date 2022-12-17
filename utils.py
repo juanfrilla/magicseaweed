@@ -192,13 +192,10 @@ def format_dataframe(df):
 
     return df
 
-def process_scrape_forecast(url, beach, chd_path):
-    msw_scraper = MSWScraper(chd_path)
+def process_scrape_forecast(url, beach):
+    msw_scraper = MSWScraper()
 
-    msw_scraper.driver.get(url)
-
-    msw_scraper.prepare_site()
-    forecast = msw_scraper.scrape()
+    forecast = msw_scraper.scrape(url)
 
     forecast = add_beach_to_forecast(forecast, beach)
     df = forecast_to_df(forecast)
@@ -211,13 +208,13 @@ def scrape_multiple_sites(urls):
 
     forecast = pd.DataFrame()
     
-    chd_path = ChromeDriverManager().install()
+    
 
     for element in urls:
         url = element['url']
         beach = element['beach']
         x = ThreadWithReturnValue(target=process_scrape_forecast,
-                                  args=(url, beach, chd_path))
+                                  args=(url, beach))
         
         add_script_run_ctx(x)
         threads.append(x)
