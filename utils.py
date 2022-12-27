@@ -1,16 +1,15 @@
-import os, pandas as pd, numpy as np
+import os, re, pandas as pd, numpy as np
 from typing import Dict
 from datetime import datetime, timedelta
 
 from threadingresult import ThreadWithReturnValue
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
-from webdriver_manager.chrome import ChromeDriverManager
-
 from datetime import datetime, timedelta
 
 from msw_scraper import MSWScraper
-import streamlit as st
+import numpy as np
+
 
 def df_to_csv(path, df: pd.DataFrame) -> None:
     if os.path.exists(path):
@@ -53,7 +52,16 @@ def convert24(str1):
     return out_time
 
 
-def format_hour(tide_info, hour, row_length):
+def format_slot_time(s):
+    digit_letter_list = list(filter(None, re.split(r'(\d+)', s)))
+    x = [
+        element + ":00" if element.isdigit() else element
+        for element in digit_letter_list
+    ]
+    return " ".join(x)
+
+
+def format_tide_time(tide_info, hour, row_length):
     if len(hour.strip()) == 4:
         hour = "0" + hour.strip()
 
@@ -78,6 +86,10 @@ def get_tide_info_list(tide_info):
     ]
 
     joined_list = tide_list + forecast_list
+
+    duplicate_list = list(
+        set([x for x in joined_list if joined_list.count(x) > 1]))
+
     joined_list.sort()
 
     if 'Bajando' in initial_status:
@@ -89,10 +101,12 @@ def get_tide_info_list(tide_info):
         if element in tide_info:
             status = not status
 
-        if element in tide_list:
+        if element in tide_list and element not in duplicate_list:
             i += 1
+
         if i < len(tide_list):
             till_tide = tide_list[i]
+
         else:
             till_tide = (datetime.strptime(tide_list[-1], "%H:%M") +
                          timedelta(hours=6, minutes=12.5)).strftime("%H:%M")
@@ -129,7 +143,8 @@ def conditions(df: pd.DataFrame) -> pd.DataFrame:
 
     FLATNESS_STR = (flatness_str != 'Plano')
 
-    FLATNESS_NUM = flatness_heigh >= 1 & (flatness_heigh <= 2.5) #flatness_heigh>primary_wave_heigh
+    FLATNESS_NUM = flatness_heigh >= 1 & (flatness_heigh <= 2.5
+                                          )  #flatness_heigh>primary_wave_heigh
 
     favorable = (STRENGTH & PERIOD & FLATNESS_STR & FLATNESS_NUM)
 
@@ -159,8 +174,15 @@ def count_swell_rate(swell_rate_list):
     return f"{active}/{inactive}"
 
 
+def timestamp_to_datetime(timestamp):
+    return datetime.fromtimestamp(timestamp)
+
+def format_datetime(dt_obj):
+    return datetime.strftime(dt_obj, )
+
+
 def format_dataframe(df):
-    df[['date', 'date_name']] = df['date'].str.split(' ', 1, expand=True)
+    df[['date', 'time', 'date_name']] = df['date'].str.split(' ', 2, expand=True)
 
     df[['description', 'wind_state']] = df['wind_state'].str.split(',',
                                                                    1,
@@ -180,42 +202,57 @@ def format_dataframe(df):
     df = df.drop(df[(df["wind_state"] != "Offshore")
                     & (df["wind_state"] != "Cross/Offshore")].index)
 
-    df = df.drop(df[(df["time"] == "9pm") | (df["time"] == "0am") |
-                    (df["time"] == "3am")].index)
+    df = df.drop(df[(df["time"] == "21:00:00") | (df["time"] == "00:00:00") |
+                    (df["time"] == "03:00:00")].index)
 
     df = df[[
-        "date_name", "date", "time", "beach", "tides_state",
-        "tides_hour", "flatness", "primary_wave", "period", "swell_rate",
-        "wind_direction", "wind_state", "description", "approval"
+        "date_name", "date", "time", "beach", "tides_state", "tides_hour",
+        "flatness", "primary_wave", "period", "swell_rate", "wind_direction",
+        "wind_state", "description", "approval"
     ]]
-    df.sort_values(by=["date", "beach"], inplace=True, ascending=[True, True])
+
+    df['date_name'] = pd.Categorical(
+        df['date_name'],
+        ["Today", "Tomorrow", "Day After Tomorrow", "Another Day"])
+    
+    df["date"] = df["date"].astype('datetime64[ns]')
+
+    df.sort_values(by=["date_name", "date", "beach"],
+                   inplace=True,
+                   ascending=[True, True, True])
+    ##
+    df["date"] = df["date"].astype('str')
+    df["date"] = df["date"].str.replace("T00:00:00", "")
+    df["time"] = df["time"].str.replace(":00:00", ":00")
+    ##
 
     return df
 
-def process_scrape_forecast(url, beach):
+
+def process_scrape_forecast(beach_data):
+    url = beach_data['url']
+    beach = beach_data['beach']
+
     msw_scraper = MSWScraper()
 
     forecast = msw_scraper.scrape(url)
 
     forecast = add_beach_to_forecast(forecast, beach)
     df = forecast_to_df(forecast)
-    
+
     return df
 
 
-def scrape_multiple_sites(urls):
+def scrape_multiple_sites(beachs_data):
     threads = list()
 
     forecast = pd.DataFrame()
-    
-    
 
-    for element in urls:
-        url = element['url']
-        beach = element['beach']
+    for data in beachs_data:
+
         x = ThreadWithReturnValue(target=process_scrape_forecast,
-                                  args=(url, beach))
-        
+                                  args=(data, ))
+
         add_script_run_ctx(x)
         threads.append(x)
         x.start()

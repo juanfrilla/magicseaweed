@@ -9,5 +9,5 @@ O hacerlo en un bucle for uno detrás de otro a ver si va más rápido
 subiendo o bajando y poner hasta en otra columna
 Boton de descargar pdf y csv
 
-Scrapear plano
+Arreglar subiendo y bajando cuando coincide la hora del forecast con la de subida o bajada
 

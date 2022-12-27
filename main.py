@@ -1,12 +1,22 @@
 import warnings
+
 warnings.filterwarnings('ignore')
 
 import front
 
 if __name__ == "__main__":
-    
 
     urls = [{
+        "beach":
+        "Matagorda",
+        "url":
+        "https://es.magicseaweed.com/Matagorda-Beach-Surf-Report/6850/"
+    }, {
+        "beach":
+        "Las Cucharas",
+        "url":
+        "https://es.magicseaweed.com/Playa-de-las-Cucharas-Surf-Report/6852/"
+    }, {
         "beach":
         "Famara",
         "url":
@@ -19,16 +29,6 @@ if __name__ == "__main__":
     }, {
         "beach": "El Castillo",
         "url": "https://es.magicseaweed.com/Castillo-Surf-Report/8255/"
-    }, {
-        "beach":
-        "Matagorda",
-        "url":
-        "https://es.magicseaweed.com/Matagorda-Beach-Surf-Report/6850/"
-    }, {
-        "beach":
-        "Las Cucharas",
-        "url":
-        "https://es.magicseaweed.com/Playa-de-las-Cucharas-Surf-Report/6852/"
     }, {
         "beach":
         "Arrieta",
@@ -52,8 +52,5 @@ if __name__ == "__main__":
         "beach": "San Juan",
         "url": "https://es.magicseaweed.com/San-Juan-Surf-Report/6853/"
     }]
-    
 
-    
     front.plot_data(urls)
-
