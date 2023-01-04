@@ -6,3 +6,4 @@ pytest==7.2.0
 pytest-cov==4.0.0
 requests-html==0.10.0
 streamlit==1.16.0
+

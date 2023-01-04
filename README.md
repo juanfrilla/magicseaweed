@@ -12,7 +12,7 @@ Asure you have selenium and google chrome installed on your linux machine.
 2. ```cd to folder```
 3. ```python -m venv venv```
 4. ```source venv/bin/activate```
-5. ```pip install -r requirements.txt```
+5. ```make install```
 6. ```streamlit run main.py```
 7. Open the network url and wait for it to load
 
