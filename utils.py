@@ -264,8 +264,14 @@ def process_scrape_forecast(beach_data):
     beach = beach_data["beach"]
 
     msw_scraper = MSWScraper()
+    import asyncio
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    forecast = loop.run_until_complete(msw_scraper.scrape(url))
+    loop.close()
 
-    forecast = msw_scraper.scrape(url)
+    #forecast = msw_scraper.scrape(url)
 
     forecast = add_beach_to_forecast(forecast, beach)
     df = forecast_to_df(forecast)
@@ -277,18 +283,33 @@ def scrape_multiple_sites(beachs_data):
     threads = list()
 
     forecast = pd.DataFrame()
+    
+    num_threads = len(beachs_data)
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    with ThreadPoolExecutor(num_threads) as executor:
+        futures = {}
+        #for i in range(num_threads):
+        for i, data in enumerate(beachs_data):
+            future = executor.submit(process_scrape_forecast, data)
+            futures[future] = i
+        for future in as_completed(futures):
+            df = future.result()
+            if df is not None:
+                forecast = combine_df(forecast, df)
+            #print(df, futures[future])
+        return forecast
 
-    for data in beachs_data:
+    # for data in beachs_data:
 
-        x = ThreadWithReturnValue(target=process_scrape_forecast, args=(data,))
+    #     x = ThreadWithReturnValue(target=process_scrape_forecast, args=(data,))
 
-        add_script_run_ctx(x)
-        threads.append(x)
-        x.start()
+    #     add_script_run_ctx(x)
+    #     threads.append(x)
+    #     x.start()
 
-    for thread in threads:
-        df = thread.join()
-        if df is not None:
-            forecast = combine_df(forecast, df)
+    # for thread in threads:
+    #     df = thread.join()
+    #     if df is not None:
+    #         forecast = combine_df(forecast, df)
 
-    return forecast
+    # return forecast
