@@ -1,9 +1,8 @@
-import warnings, time, asyncio
-from halo import Halo
+import warnings
 
 warnings.filterwarnings("ignore")
 
-import utils
+import front
 
 def main():
     urls = [
@@ -53,27 +52,8 @@ def main():
         },
     ]
 
-    #front.plot_data(urls)
+    front.plot_data(urls)
     
-    start_time = time.time()
-    spinner = Halo(
-        text="Scrapping data from MagicSeaWeed\n",
-        text_color="blue",
-        color="magenta",
-        spinner="dots",
-    )
-    spinner.start()
-    
-    
-    df = utils.scrape_multiple_sites(urls)
-    
-    df = utils.format_dataframe(df)
-    utils.df_to_csv("magicseaweed.csv", df)
-
-    spinner.stop_and_persist(
-        text="You can check the url (👨‍💻) or if you prefer, the csv file (👀📈), happy surfing (🏄) and respect the sea(🌊)"
-    )
-    print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == "__main__":
     main()
