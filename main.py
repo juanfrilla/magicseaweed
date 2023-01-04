@@ -4,6 +4,7 @@ warnings.filterwarnings("ignore")
 
 import front
 
+
 def main():
     urls = [
         {
@@ -53,8 +54,7 @@ def main():
     ]
 
     front.plot_data(urls)
-    
+
 
 if __name__ == "__main__":
     main()
-

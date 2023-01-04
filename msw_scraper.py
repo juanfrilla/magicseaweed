@@ -1,13 +1,11 @@
 from bs4 import BeautifulSoup
-#from requests_html import HTMLSession
-
-from requests_html import AsyncHTMLSession
+from requests_html import HTMLSession
 
 import utils
 
 
 class MSWScraper(object):
-    async def scrape(self, url):
+    def scrape(self, url):
         forecast = {
             "date": [],
             "flatness": [],
@@ -20,13 +18,10 @@ class MSWScraper(object):
 
         days = {0: "Today", 1: "Tomorrow", 2: "Day After Tomorrow"}
 
-        #session = HTMLSession()
-        #r = session.get(url)
-        asession = AsyncHTMLSession()
-        
-        r = await asession.get(url)
+        session = HTMLSession()
+        r = session.get(url)
 
-        
+        r = session.get(url)
 
         s = BeautifulSoup(r.html.html, "html.parser")
         table = s.find(
