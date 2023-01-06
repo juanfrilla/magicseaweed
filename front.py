@@ -1,8 +1,8 @@
 import streamlit as st
 from halo import Halo
 
-import time
-import utils
+import time, utils
+from threads import multithread
 
 # Cache the dataframe so it's only loaded once
 @st.experimental_memo
@@ -17,7 +17,7 @@ def load_data(urls):
     )
     spinner.start()
 
-    df = utils.scrape_multiple_sites(urls)
+    df = multithread.scrape_multiple_sites(urls)
     df = utils.format_dataframe(df)
     utils.df_to_csv("magicseaweed.csv", df)
 

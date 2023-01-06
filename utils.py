@@ -1,12 +1,8 @@
 import os, re, pandas as pd, numpy as np
 from typing import Dict
 
-from threadingresult import ThreadWithReturnValue
-from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 from datetime import datetime, timedelta
-
-from msw_scraper import MSWScraper
 
 
 def df_to_csv(path, df: pd.DataFrame) -> None:
@@ -43,6 +39,12 @@ def convert24(ampm_time):
     in_time = datetime.strptime(ampm_time, "%I:%M %p")
     out_time = datetime.strftime(in_time, "%H:%M")
     return out_time
+
+
+def feet_to_m(feet):
+    meter = float(feet) * 0.3048
+
+    return round(meter, 1)
 
 
 def format_slot_time(s):
@@ -131,17 +133,11 @@ def get_tide_info_list(tide_info):
 
 
 def conditions(df: pd.DataFrame) -> pd.DataFrame:
-    primary_wave_heigh = df["primary_wave"].str.replace("m", "").astype(float)
+    primary_wave_heigh = df["primary_wave"].astype(float)
+
     period = df["period"].str.replace("s", "").astype(float)
     flatness_str = df["flatness"].str.strip()
-    flatness_heigh = (
-        df["flatness"]
-        .str.split("-")
-        .str[1]
-        .str.replace("m", "")
-        .str.strip()
-        .astype(float)
-    )
+    flatness_heigh = df["flatness"].str.split("-").str[1].astype(float)
 
     # STRENGTH
     STRENGTH = (primary_wave_heigh >= 1) & (primary_wave_heigh <= 2.5)
@@ -194,9 +190,11 @@ def format_datetime(dt_obj):
 
 
 def format_dataframe(df):
+
     df[["date", "time", "date_name"]] = df["date"].str.split(" ", 2, expand=True)
 
     df[["description", "wind_state"]] = df["wind_state"].str.split(",", 1, expand=True)
+
     df[["wind_state", "wind_direction"]] = df["wind_state"].str.split(
         "shore", 1, expand=True
     )
@@ -257,38 +255,3 @@ def format_dataframe(df):
     ##
 
     return df
-
-
-def process_scrape_forecast(beach_data):
-    url = beach_data["url"]
-    beach = beach_data["beach"]
-
-    msw_scraper = MSWScraper()
-
-    forecast = msw_scraper.scrape(url)
-
-    forecast = add_beach_to_forecast(forecast, beach)
-    df = forecast_to_df(forecast)
-
-    return df
-
-
-def scrape_multiple_sites(beachs_data):
-    threads = list()
-
-    forecast = pd.DataFrame()
-
-    for data in beachs_data:
-
-        x = ThreadWithReturnValue(target=process_scrape_forecast, args=(data,))
-
-        add_script_run_ctx(x)
-        threads.append(x)
-        x.start()
-
-    for thread in threads:
-        df = thread.join()
-        if df is not None:
-            forecast = combine_df(forecast, df)
-
-    return forecast

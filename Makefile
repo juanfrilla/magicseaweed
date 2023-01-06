@@ -9,7 +9,7 @@ lint:
 	#flake6 or pylint
 	pylint --disable=R,C *.py *.py tests/*.py
 test:
-	python -m pytest -vv --cov=utils tests
+	python -m pytest -vv --cov=. tests -s
 build:
 	#build container
 	docker build -t magicseaweed .

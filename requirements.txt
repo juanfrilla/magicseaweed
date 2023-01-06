@@ -4,5 +4,6 @@ halo==0.0.31
 pylint==2.15.9
 pytest==7.2.0
 pytest-cov==4.0.0
+python-dotenv==0.21.0
 requests-html==0.10.0
 streamlit==1.16.0
