@@ -110,7 +110,7 @@ class MSWScraper(object):
                                     f"{utils.feet_to_m(flats[0])}-{utils.feet_to_m(flats[1])}"
                                 )
                             else:
-                                forecast["flatness"] = cell.text.strip()
+                                forecast["flatness"] = cell.text.strip().replace("m", "")
 
                     if "class" in row.attrs:
                         class_row = " ".join(row["class"]).strip()

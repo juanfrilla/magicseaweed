@@ -1,6 +1,5 @@
 
 # 🌊 MAGICSEAWEED
- > **_NOTE:_**  <h3>I'm struggling with the deployment on Streamlit Cloud, you are welcome to help me if you want.</h3>
 
 Automation script that helps me in the task of interpreting when there are waves, scraping data from multiple magicseaweed sites (with threads) from the spots at the same time.
 

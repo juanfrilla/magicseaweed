@@ -1,4 +1,4 @@
-from threadingresult import ThreadWithReturnValue
+from .threadingresult import ThreadWithReturnValue
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from msw_scraper import MSWScraper
 import utils
