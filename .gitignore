@@ -4,3 +4,4 @@ __pycache__/
 *.csv
 .~lock.magicseaweed.csv#
 .env
+.coverage
