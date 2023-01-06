@@ -1,10 +1,14 @@
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
 
-import utils
+import utils, os
+from dotenv import load_dotenv
 
 
 class MSWScraper(object):
+    def __init__(self):
+        load_dotenv()
+
     def scrape(self, url):
         forecast = {
             "date": [],
@@ -21,12 +25,17 @@ class MSWScraper(object):
         session = HTMLSession()
         r = session.get(url)
 
-        r = session.get(url)
-
         s = BeautifulSoup(r.html.html, "html.parser")
+
+        table_class = (
+            "table table-primary table-forecast allSwellsActive msw-js-table msw-units-large"
+            if os.getenv("stage") == "DEV"
+            else "table table-primary table-forecast allSwellsActive msw-js-table"
+        )
+
         table = s.find(
             "table",
-            class_="table table-primary table-forecast allSwellsActive msw-js-table msw-units-large",
+            class_=table_class,
         )
 
         tablebodies = table.find_all(name="tbody", recursive=False)
@@ -62,15 +71,23 @@ class MSWScraper(object):
                             "text-center last msw-js-tooltip td-square background-success",
                             "text-center last msw-js-tooltip td-square background-danger",
                         ]:
+
                             forecast["wind_state"].append(cell["title"])
 
                         # STRENGTH AND PERIOD
                         elif class_cell == "text-center background-gray-lighter":
 
-                            if "m" in cell.text:
-                                forecast["primary_wave"].append(cell.text)
-                            elif "s" in cell.text:
-                                forecast["period"].append(cell.text)
+                            if "ft" in cell.text.strip():
+                                meters = utils.feet_to_m(
+                                    str(cell.text.strip()).replace("ft", "")
+                                )
+                                forecast["primary_wave"].append(meters)
+                            elif "m" in cell.text.strip():
+                                forecast["primary_wave"].append(
+                                    cell.text.strip().replace("m", "")
+                                )
+                            elif "s" in cell.text.strip():
+                                forecast["period"].append(cell.text.strip())
 
                         # SWELL RATE
                         elif class_cell == "table-forecast-rating td-nowrap":
@@ -87,8 +104,13 @@ class MSWScraper(object):
                             class_cell
                             == "text-center background-info table-forecast-breaking-wave"
                         ):
-                            forecast["flatness"] = cell.text
-                            # print(cell.text)
+                            if "ft" in cell.text.strip():
+                                flats = cell.text.strip().replace("ft", "").split("-")
+                                forecast["flatness"].append(
+                                    f"{utils.feet_to_m(flats[0])}-{utils.feet_to_m(flats[1])}"
+                                )
+                            else:
+                                forecast["flatness"] = cell.text.strip()
 
                     if "class" in row.attrs:
                         class_row = " ".join(row["class"]).strip()
@@ -99,12 +121,12 @@ class MSWScraper(object):
                             trs = table.find_all("tr")
                             row_length = len(trs)
 
-                            if "Marea" in cell.text and len(tide_info) < 8:
-                                tide = cell.text
+                            if "Marea" in cell.text.strip() and len(tide_info) < 8:
+                                tide = cell.text.strip()
                                 tide = utils.format_tide(tide)
-                            elif ":" in cell.text and len(tide_info) < 8:
+                            elif ":" in cell.text.strip() and len(tide_info) < 8:
                                 hour = utils.format_tide_time(
-                                    tide_info, cell.text, row_length
+                                    tide_info, cell.text.strip(), row_length
                                 )
                                 hour = utils.convert24(hour)
 
@@ -122,5 +144,4 @@ class MSWScraper(object):
                                 tide_info = utils.get_tide_info_list(tide_info)
                                 for element in tide_info:
                                     forecast["tides"].append(element)
-
         return forecast
