@@ -21,6 +21,6 @@ Personally, the conditions that I consider favorables are the following: The win
 I also see that flatness parameter is not flat and that is higher than primary waves.
 Another thing to take notice is that I only take three days (today, tomorrow and day after tomorrow), because the more far you go on days, the less accurate it are the predictions.
 
-This project is still under construction (I'm struggling with the deployment in Streamlit)
+This project is still under construction.
 
 If you enjoyed this project, I will be so much pleased if you give me a star (⭐).
