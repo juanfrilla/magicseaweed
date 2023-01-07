@@ -5,9 +5,8 @@ import time, utils
 from threads import multithread
 
 # Cache the dataframe so it's only loaded once
-@st.experimental_memo
+@st.cache
 def load_data(urls):
-
     start_time = time.time()
     spinner = Halo(
         text="Scrapping data from MagicSeaWeed\n",
@@ -33,17 +32,25 @@ def plot_data(urls):
 
     # Boolean to resize the dataframe, stored as a session state variable
     st.checkbox("Use container width", value=False, key="use_container_width")
-    df = load_data(urls)
+    st.session_state.df = load_data(urls)
+
+    ##
+    button = st.button("Reload data")
+    if button:
+        st.session_state.df = multithread.scrape_multiple_sites(urls)
+        st.session_state.df = utils.format_dataframe(st.session_state.df)
+        button = False
+    ##
 
     # Display the dataframe and allow the user to stretch the dataframe
     # across the full width of the container, based on the checkbox value
 
     # GET UNIQUES
-    date_name = df["date_name"].unique().tolist()
-    wind_state = df["wind_state"].unique().tolist()
-    beach = df["beach"].unique().tolist()
-    approval = df["approval"].unique().tolist()
-    tides_state = df["tides_state"].unique().tolist()
+    date_name = st.session_state.df["date_name"].unique().tolist()
+    wind_state = st.session_state.df["wind_state"].unique().tolist()
+    beach = st.session_state.df["beach"].unique().tolist()
+    approval = st.session_state.df["approval"].unique().tolist()
+    tides_state = st.session_state.df["tides_state"].unique().tolist()
 
     # CREATE MULTISELECT
     date_name_selection = st.multiselect("Date:", date_name, default=date_name)
@@ -59,14 +66,16 @@ def plot_data(urls):
 
     # --- FILTER DATAFRAME BASED ON SELECTION
     mask = (
-        (df["date_name"].isin(date_name_selection))
-        & (df["wind_state"].isin(wind_state_selection))
-        & (df["beach"].isin(beach_selection))
-        & (df["approval"].isin(approval_selection))
-        & (df["tides_state"].isin(tides_state_selection))
+        (st.session_state.df["date_name"].isin(date_name_selection))
+        & (st.session_state.df["wind_state"].isin(wind_state_selection))
+        & (st.session_state.df["beach"].isin(beach_selection))
+        & (st.session_state.df["approval"].isin(approval_selection))
+        & (st.session_state.df["tides_state"].isin(tides_state_selection))
     )
 
     # --- GROUP DATAFRAME AFTER SELECTION
-    df = df[mask]
+    st.session_state.df = st.session_state.df[mask]
 
-    st.dataframe(df, use_container_width=st.session_state.use_container_width)
+    st.dataframe(
+        st.session_state.df, use_container_width=st.session_state.use_container_width
+    )

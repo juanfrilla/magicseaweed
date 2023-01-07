@@ -106,14 +106,18 @@ class MSWScraper(object):
                         ):
                             if "ft" in cell.text.strip():
                                 flats = cell.text.strip().replace("ft", "").split("-")
-                                
-                                flatness_def = f"{utils.feet_to_m(flats[0])}-{utils.feet_to_m(flats[1])}" if len(flats)==2 else f"{utils.feet_to_m(flats[0])}"
-                                
-                                forecast["flatness"].append(
-                                    flatness_def
+
+                                flatness_def = (
+                                    f"{utils.feet_to_m(flats[0])}-{utils.feet_to_m(flats[1])}"
+                                    if len(flats) == 2
+                                    else f"{utils.feet_to_m(flats[0])}"
                                 )
+
+                                forecast["flatness"].append(flatness_def)
                             else:
-                                forecast["flatness"].append(cell.text.strip().replace("m", ""))
+                                forecast["flatness"].append(
+                                    cell.text.strip().replace("m", "")
+                                )
 
                     if "class" in row.attrs:
                         class_row = " ".join(row["class"]).strip()
