@@ -5,7 +5,7 @@ import time, utils
 from threads import multithread
 
 # Cache the dataframe so it's only loaded once
-@st.cache
+@st.experimental_memo(ttl=7200)
 def load_data(urls):
     start_time = time.time()
     spinner = Halo(
