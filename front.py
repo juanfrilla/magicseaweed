@@ -28,19 +28,23 @@ def load_data(urls):
     return df
 
 
+
+
 def plot_data(urls):
 
     # Boolean to resize the dataframe, stored as a session state variable
     st.checkbox("Use container width", value=False, key="use_container_width")
     st.session_state.df = load_data(urls)
 
-    ##
-    button = st.button("Reload data")
+    #
+    button = st.button("Rescrape data")
     if button:
+        st.experimental_memo.clear()
         st.session_state.df = multithread.scrape_multiple_sites(urls)
         st.session_state.df = utils.format_dataframe(st.session_state.df)
         button = False
-    ##
+    #
+    
 
     # Display the dataframe and allow the user to stretch the dataframe
     # across the full width of the container, based on the checkbox value
