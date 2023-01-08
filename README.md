@@ -5,7 +5,7 @@ Automation script that helps me in the task of interpreting when there are waves
 
 # 🏄 steps to put this to work:
 
-Asure you have selenium and google chrome installed on your linux machine.
+Asure you have google chrome installed on your linux machine.
 
 1. ```git clone this repo```
 2. ```cd to folder```
