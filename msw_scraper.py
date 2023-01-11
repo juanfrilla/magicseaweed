@@ -20,7 +20,7 @@ class MSWScraper(object):
             "swell_rate": [],
         }
 
-        days = {0: "Today", 1: "Tomorrow", 2: "Day After Tomorrow"}
+        days = {0: "Hoy", 1: "Mañana", 2: "Pasado"}
 
         session = HTMLSession()
         r = session.get(url)
@@ -63,7 +63,7 @@ class MSWScraper(object):
                             if index_tb in [0, 1, 2]:
                                 forecast["date"].append(f"{r_date} {days[index_tb]}")
                             else:
-                                forecast["date"].append(f"{r_date} Another Day")
+                                forecast["date"].append(f"{r_date} Otro día")
 
                         # WIND STATE
                         elif class_cell in [

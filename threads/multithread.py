@@ -5,14 +5,19 @@ import utils
 import pandas as pd
 
 
-def process_scrape_forecast(beach_data):
+def process_scrape_forecast(beach_data: dict):
     url = beach_data["url"]
     beach = beach_data["beach"]
+    island = beach_data["island"]
     msw_scraper = MSWScraper()
 
     forecast = msw_scraper.scrape(url)
-
-    forecast = utils.add_beach_to_forecast(forecast, beach)
+    
+    
+    forecast = utils.add_element_to_forecast(forecast, "island", island)
+    forecast = utils.add_element_to_forecast(forecast,"beach",  beach)
+    
+    
     df = utils.forecast_to_df(forecast)
 
     return df

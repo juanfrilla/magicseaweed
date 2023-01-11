@@ -1,4 +1,3 @@
-
 # 🌊 MAGICSEAWEED
 
 Automation script that helps me in the task of interpreting when there are waves, scraping data from multiple magicseaweed sites (with threads) from the spots at the same time.

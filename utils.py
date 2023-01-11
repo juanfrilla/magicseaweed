@@ -21,11 +21,11 @@ def forecast_to_df(forecast: Dict) -> pd.DataFrame:
     return df
 
 
-def add_beach_to_forecast(forecast, beach):
+def add_element_to_forecast(forecast, key, value):
     count_row = len(forecast["wind_state"])
-    same_beach_list = [beach for i in range(0, count_row)]
+    same_element_list = [value for i in range(0, count_row)]
 
-    forecast["beach"] = same_beach_list
+    forecast[key] = same_element_list
 
     return forecast
 
@@ -226,6 +226,7 @@ def format_dataframe(df):
             "date",
             "time",
             "beach",
+            "island",
             "tides_state",
             "tides_hour",
             "flatness",
@@ -240,7 +241,7 @@ def format_dataframe(df):
     ]
 
     df["date_name"] = pd.Categorical(
-        df["date_name"], ["Today", "Tomorrow", "Day After Tomorrow", "Another Day"]
+        df["date_name"], ["Hoy", "Mañana", "Pasado", "Otro día"]
     )
 
     df["date"] = df["date"].astype("datetime64[ns]")
